@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>HunterRock Chat Monitor</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700&display=swap" rel="stylesheet" type="text/css"/>
+    <link href="style.css" rel="stylesheet" type="text/css"/>
+  </head>
+  <body>
+    <div id="curtain" class="hidden">
+      <p>Chat hidden - press Ctrl+Shift+H to reveal</p>
+    </div>
+    <div id="settings-wheel" title="Ctrl+Shift+S">⚙ Settings</div>
+    <div id="fps" class="hidden"></div>
+    <div id="settings" class="hidden">
+      <h2>Settings</h2>
+      <div>
+        <h3>Twitch</h3>
+        <div><form action="#"><label>Twitch channel: <input type="text" id="settings-channel" required="required"/></label> <input type="submit" value="Join"/></form></div>
+      </div>
+      <div>
+        <h3>Style</h3>
+        <div class="fields style">
+          <div>Arkaplan<br/><input type="color" id="settings-background-color"/></div>
+          <div>Odd rows<br/><input type="color" id="settings-odd-background-color"/></div>
+          <div>Separator<br/><input type="color" id="settings-separator-color"/></div>
+          <div>Metin<br/><input type="color" id="settings-text-color"/></div>
+          <div>Kullanıcı<br/><input type="color" id="settings-user-color"/></div>
+          <div>ModeratÖr<br/><input type="color" id="settings-moderator-color"/></div>
+          <div>Kanal<br/><input type="color" id="settings-channel-color"/></div>
+          <div>Bildirim<br/><input type="color" id="settings-notice-color"/></div>
+          <div>Vurgu<br/><input type="color" id="settings-highlight-color"/></div>
+        </div>
+      </div>
+      <div>
+        <h3>Sohbet Kuralları</h3>
+        <div><label><input type="checkbox" id="settings-new-messages-on-top"/> En üstte yeni mesajlar görünüyor</label></div>
+        <div>
+          <label><input type="checkbox" id="settings-smooth-scroll"/> Düzgün kaydırma</label>
+          <div class="subfield hidden"><label>Mesajın görünmesi için izin verilen süre: <input type="number" size="5" max="10000" min="1" id="settings-smooth-scroll-duration"/> milisaniye</label></div>
+        </div>
+        <div><label><input type="checkbox" id="settings-combine-messages"/> Mesajları aynı içerikle birleştirin</label></div>
+      </div>
+      <div>
+        <h3>Mesaj Handling</h3>
+        <div><label><input type="checkbox" id="settings-format-urls"/> URL'leri tıklanabilir bağlantılara dönüştürün</label></div>
+        <div><label><input type="checkbox" id="settings-shorten-urls"/> Uzun URL'leri kısaltın </label></div>
+        <div>
+          <label><input type="checkbox" id="settings-inline-images"/> Kullanıcılar tarafından bağlantılı tüm resimleri göster</label>
+          <div class="subfield hidden"><label>Maximum resim büyüklüğü: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height"/>% </label></div>
+        </div>
+        <div><label><input type="checkbox" id="settings-unfurl-twitter"/>Unfurl Twitter bağlantıları</label></div>
+        <div><label><input type="checkbox" id="settings-unfurl-youtube"/>Unfurl YouTube bağlantıları</label></div>
+        <div class="subfield hidden"><label><input type="checkbox" id="settings-play-youtube"/> YouTube videolarını gösterin ve otomatik oynatın</label></div>
+        <div><label>Zaman damgalarını göster: 
+          <select id="settings-timestamps">
+            <option value="">None</option>
+            <option value="short24">23:59</option>
+            <option value="long24">23:59:00</option>
+            <option value="short12">11:59 PM</option>
+            <option value="long12">11:59:00 PM</option>
+          </select></label>
+        </div>
+        <div><label>Gelen mesajları vurgula <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35"/></label></div>
+        <div><label>İçeren mesajları vurgula <input type="text" placeholder="keyphrases separated by commas" id="settings-highlight-keyphrases" size="35"/></label></div>
+      </div>
+      <div>
+        <h3>Mesaj Türleri</h3>
+        <div class="fields">
+          <div><label><input type="checkbox" id="settings-show-subscriptions"/> Subscriptions</label></div>
+          <div><label><input type="checkbox" id="settings-show-bits"/> Bits</label></div>
+          <div><label><input type="checkbox" id="settings-show-mod-actions"/> Mod actions</label></div>
+        </div>
+      </div>
+      <div>
+        <h3>Stats for Nerds</h3>
+        <div class="fields">
+          <div><label><input type="checkbox" id="settings-show-fps"/> FPS</label></div>
+        </div>
+      </div>
+      <div>Bazı değişiklikler yalnızca yeni gelen mesajlara uygulanacak</div>
+    </div>
+
+    <div id="chat-container">
+      <div id="chat"></div>
+    </div>
+
+    <script src="tmi.min.js"></script>
+    <script>
+var defaultSettings = {
+  'channel': 'hunterrock_',
+  'new-messages-on-top': false,
+  'smooth-scroll': true,
+  'smooth-scroll-duration': 1000,  
+  'combine-messages': false,
+  'format-urls': true,
+  'shorten-urls': true,
+  'inline-images': true,
+  'inline-images-height': '30vh',
+  'unfurl-twitter': true,
+  'unfurl-youtube': true,
+  'timestamps': '',
+  'background-color': '#000000',
+  'odd-background-color': '#111111',
+  'separator-color': '#444444',
+  'text-color': '#eeeeee',
+  'user-color': '#008000',
+  'moderator-color': '#8383f9',
+  'channel-color': '#0d86ff',
+  'notice-color': '#eeeeee',
+  'highlight-color': '#731180',
+  'highlight-users': '',
+  'highlight-keyphrases': '',
+  'show-subscriptions': true,
+  'show-bits': true,
+  'show-mod-actions': false,
+  'show-fps': false
+};
+    </script>
+    <script src="main.js"></script>
+  </body>
+</html>
